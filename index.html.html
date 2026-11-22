@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="pt-BR"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Luna</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#23332b;--panel:rgba(255,252,243,.9);--line:rgba(35,51,43,.16);--acc:#e8743b;--accink:#fff;--track:rgba(35,51,43,.12);box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--ink:#eaf3ea;--panel:rgba(22,34,29,.9);--line:rgba(234,243,234,.18);--track:rgba(234,243,234,.15)}}
+:root[data-theme="dark"]{--ink:#eaf3ea;--panel:rgba(22,34,29,.9);--line:rgba(234,243,234,.18);--track:rgba(234,243,234,.15)}
+html,body{height:100%;margin:0;background:#bfe6d2;overflow:hidden;font-family:Fredoka,system-ui,sans-serif;color:var(--ink);touch-action:none;-webkit-user-select:none;user-select:none}
+#c{position:fixed;inset:0;width:100%;height:100%;display:block}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:18px;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+#top{position:fixed;left:10px;right:10px;top:calc(env(safe-area-inset-top,0px) + 10px);display:flex;flex-direction:column;gap:8px}
+#head{padding:8px 14px;display:flex;justify-content:space-between;align-items:baseline;font-weight:600}
+#head small{font-weight:400;opacity:.75}
+#log{padding:8px 14px;font-size:14px;line-height:1.35;max-height:30vh;overflow:hidden}
+#log.open{max-height:46vh;overflow:auto}
+#log b{font-weight:600}
+#log p{margin:0 0 5px}
+#log p span{opacity:.55;margin-right:6px;font-size:12px}
+#log p:first-of-type{font-weight:600}
+#bot{position:fixed;left:10px;right:10px;bottom:calc(env(safe-area-inset-bottom,0px) + 10px);display:flex;flex-direction:column;gap:8px}
+#bars{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;padding:10px 12px}
+.bar{font-size:13px}.bar i{display:block;height:7px;border-radius:4px;background:var(--track);margin-top:4px;overflow:hidden}
+.bar i b{display:block;height:100%;width:50%;background:#6bbf59;border-radius:4px;transition:width .4s}
+#tools{display:flex;gap:8px}
+button{font:inherit;font-weight:600;color:var(--ink);background:var(--panel);border:2px solid var(--line);border-radius:14px;padding:12px 10px;flex:1}
+button.on{border-color:var(--acc);background:var(--acc);color:var(--accink)}
+#setup{position:fixed;inset:0;background:#bfe6d2;display:flex;align-items:center;justify-content:center;padding:20px;z-index:5}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) #setup{background:#1d2b25}}
+:root[data-theme="dark"] #setup{background:#1d2b25}
+#setup .card{padding:22px;max-width:380px;width:100%;box-sizing:border-box}
+#setup h1{margin:0 0 4px;font-size:26px}#setup p{margin:0 0 16px;opacity:.8;font-size:15px}
+#sw{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px}
+#sw div{height:54px;border-radius:14px;border:3px solid transparent;display:flex;align-items:flex-end;justify-content:center;font-size:11px;padding-bottom:3px;color:#fff;text-shadow:0 1px 2px #0008}
+#sw div.sel{border-color:var(--acc);box-shadow:0 0 0 2px var(--panel) inset}
+#nm{width:100%;box-sizing:border-box;font:inherit;padding:12px;border-radius:12px;border:2px solid var(--line);background:transparent;color:var(--ink);margin-bottom:12px;-webkit-user-select:text;user-select:text}
+#go{width:100%;background:var(--acc);color:var(--accink);border-color:var(--acc)}
+.em{position:fixed;font-size:26px;pointer-events:none;transform:translate(-50%,-50%);animation:up 1.4s ease-out forwards}
+#wish{padding:10px 12px;display:none;font-size:14px;line-height:1.35}#wish div{display:flex;gap:8px;margin-top:8px}#wish button{padding:9px 8px}
+@keyframes up{to{transform:translate(-50%,-150%);opacity:0}}
+@media (prefers-reduced-motion:reduce){.em{animation:none;opacity:.9}}
+
+#bars{grid-template-columns:repeat(8,1fr);gap:6px;padding:8px 10px}.bar{font-size:15px;text-align:center}
+#tools button{padding:11px 4px;font-size:13px}
+#chat{position:fixed;left:10px;right:10px;bottom:calc(env(safe-area-inset-bottom,0px) + 10px);height:64vh;display:none;flex-direction:column;z-index:4;padding:10px;box-sizing:border-box;gap:8px}
+#chead{display:flex;justify-content:space-between;align-items:center;font-weight:600}#chead button{flex:none;padding:6px 12px}
+#cmsgs{flex:1;overflow:auto;touch-action:pan-y;display:flex;flex-direction:column;gap:6px}
+.m{max-width:85%;padding:8px 11px;border-radius:14px;font-size:14px;line-height:1.35;border:1px solid var(--line);-webkit-user-select:text;user-select:text}
+.m.cat{align-self:flex-start}.m.you{align-self:flex-end;background:var(--acc);color:var(--accink);border-color:var(--acc)}
+.ma{display:flex;gap:6px;margin-top:8px}.ma button{padding:8px;font-size:13px}
+#cq{display:flex;gap:6px;flex-wrap:wrap}#cq button{flex:none;padding:7px 10px;font-size:13px}
+#cin{display:flex;gap:6px}#ctext{flex:1;min-width:0;font:inherit;font-size:16px;padding:10px;border-radius:12px;border:2px solid var(--line);background:transparent;color:var(--ink);-webkit-user-select:text;user-select:text}
+#cin button{flex:none;padding:10px 14px;background:var(--acc);color:var(--accink);border-color:var(--acc)}
+</style></head><body>
+<canvas id="c"></canvas>
+<div id="top" style="display:none"><div class="card" id="head"><span id="nameLv"></span><small id="mood"></small></div>
+<div class="card" id="log"></div></div>
+<div id="bot" style="display:none"><div class="card" id="bars"><div class="bar" title="Fome">🍖<i><b id="b0"></b></i></div><div class="bar" title="Sede">💧<i><b id="b1"></b></i></div><div class="bar" title="Energia">⚡<i><b id="b2"></b></i></div><div class="bar" title="Higiene">🧼<i><b id="b3"></b></i></div><div class="bar" title="Caixa de areia">🚽<i><b id="b4"></b></i></div><div class="bar" title="Instinto de caça">🎯<i><b id="b5"></b></i></div><div class="bar" title="Vínculo">💗<i><b id="b6"></b></i></div><div class="bar" title="Calma">😌<i><b id="b7"></b></i></div></div><div id="tools"><button id="t-ball" class="on">🧶 Novelo</button><button id="t-fish">🐟 Petisco</button><button id="t-loud">📢 Barulho</button><button id="t-chat">💻 Chat</button></div></div>
+<div class="card" id="chat"><div id="chead"><span>💻 Computador do gato</span><button id="cx">Fechar</button></div><div id="cmsgs"></div><div id="cq"></div><div id="gallery" style="max-height:110px;overflow:auto;touch-action:pan-y"></div><div id="cin"><input id="ctext" maxlength="120" placeholder="Escreva para o gato"><button id="csend">Enviar</button></div></div>
+<div id="setup"><div class="card"><h1>Escolha seu gato</h1>
+<p>Ele pensa, decide e cuida de si sozinho. Você pode brincar, dar petisco e fazer carinho.</p>
+<div id="sw"></div><input id="nm" maxlength="14" placeholder="Nome do gato" value="Mingau"><button id="go">Começar</button></div></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+const $=s=>document.querySelector(s);
+const COLORS=[{n:"Laranja",c:0xe8923b},{n:"Cinza",c:0x8a93a0},{n:"Preto",c:0x34343c},{n:"Creme",c:0xf0e2c4}];
+let SAVE=null;try{SAVE=JSON.parse(localStorage.getItem("gato-ia")||"null")}catch(e){}
+let ci=SAVE?SAVE.ci:0;
+COLORS.forEach((c,i)=>{const d=document.createElement("div");d.style.background="#"+c.c.toString(16).padStart(6,"0");d.textContent=c.n;if(i===ci)d.className="sel";
+d.onclick=()=>{ci=i;[...$("#sw").children].forEach((x,j)=>x.className=j===i?"sel":"")};$("#sw").appendChild(d)});
+if(SAVE)$("#nm").value=SAVE.name;
+$("#go").onclick=()=>start($("#nm").value.trim()||"Mingau",ci);
+
+function start(name,ci){
+$("#setup").style.display="none";$("#top").style.display="flex";$("#bot").style.display="flex";
+const cv=$("#c"),R=new THREE.WebGLRenderer({canvas:cv,antialias:true});
+R.setPixelRatio(Math.min(devicePixelRatio,2));R.setSize(innerWidth,innerHeight);
+const sc=new THREE.Scene();sc.background=new THREE.Color(0xbfe6d2);sc.fog=new THREE.Fog(0xbfe6d2,16,46);
+const cam=new THREE.PerspectiveCamera(55,innerWidth/innerHeight,.1,100);
+const hemi=new THREE.HemisphereLight(0xffffff,0x6a9a5a,.95);sc.add(hemi);
+const sun=new THREE.DirectionalLight(0xfff2d0,.8);sun.position.set(8,14,6);sc.add(sun);
+const mesh=(g,c,x=0,y=0,z=0)=>{const m=new THREE.Mesh(g,new THREE.MeshStandardMaterial({color:c,flatShading:true,roughness:1}));m.position.set(x,y,z);return m};
+const rnd=(a,b)=>a+Math.random()*(b-a);
+const ground=mesh(new THREE.CircleGeometry(40,24),0x8fcf6a);ground.rotation.x=-Math.PI/2;sc.add(ground);
+for(let i=0;i<14;i++){const p=mesh(new THREE.CircleGeometry(rnd(1.5,4),7),0x7fc25f,rnd(-18,18),.02,rnd(-18,18));p.rotation.x=-Math.PI/2;sc.add(p)}
+function tree(x,z,s){const g=new THREE.Group();g.add(mesh(new THREE.CylinderGeometry(.25,.35,1.6,6),0x7a5638,0,.8,0));
+g.add(mesh(new THREE.ConeGeometry(1.4,2.2,6),0x4f9a4a,0,2.5,0));g.add(mesh(new THREE.ConeGeometry(1,1.8,6),0x5fae55,0,3.7,0));g.position.set(x,0,z);g.scale.setScalar(s);sc.add(g)}
+for(let i=0;i<38;i++){const a=rnd(0,6.28),r=rnd(13,34);tree(Math.cos(a)*r,Math.sin(a)*r,rnd(.8,1.5))}
+tree(-3,-9,1.2);
+for(let i=0;i<9;i++){const a=rnd(0,6.28),r=rnd(9,28);const k=mesh(new THREE.DodecahedronGeometry(rnd(.6,1.5)),0x9aa3ad,Math.cos(a)*r,.4,Math.sin(a)*r);k.rotation.set(rnd(0,3),rnd(0,3),0);sc.add(k)}
+for(let i=0;i<34;i++){const x=rnd(-12,12),z=rnd(-12,12),c=[0xff8fb1,0xffd84a,0xffffff,0xb48cff][i%4];
+sc.add(mesh(new THREE.CylinderGeometry(.02,.02,.4,4),0x4a8a3a,x,.2,z));sc.add(mesh(new THREE.SphereGeometry(.11,5,4),c,x,.45,z))}
+const BOWL=new THREE.Vector3(-6,0,-3),BED=new THREE.Vector3(6.5,0,-4),TREE=new THREE.Vector3(-3,0,-7.8);
+sc.add(mesh(new THREE.CylinderGeometry(.5,.4,.25,8),0xd9534f,BOWL.x,.12,BOWL.z));sc.add(mesh(new THREE.CylinderGeometry(.4,.4,.05,8),0xc8864b,BOWL.x,.26,BOWL.z));
+sc.add(mesh(new THREE.CylinderGeometry(1.1,1.2,.3,8),0x5b7fd6,BED.x,.15,BED.z));sc.add(mesh(new THREE.CylinderGeometry(.8,.9,.12,8),0x86a3ee,BED.x,.34,BED.z));
+const WATER=new THREE.Vector3(-4.6,0,-4.3),LIT=new THREE.Vector3(-8.2,0,1.5);
+sc.add(mesh(new THREE.CylinderGeometry(.45,.38,.22,8),0x4d8fd6,WATER.x,.11,WATER.z));
+const wsurf=mesh(new THREE.CylinderGeometry(.36,.36,.04,8),0x8fd3ff,WATER.x,.22,WATER.z);sc.add(wsurf);
+const fmound=mesh(new THREE.SphereGeometry(.3,6,4),0x8b5a2b,BOWL.x,.3,BOWL.z);fmound.scale.y=.4;sc.add(fmound);
+sc.add(mesh(new THREE.BoxGeometry(1.6,.3,1.2),0x6fa8dc,LIT.x,.15,LIT.z));const sand=mesh(new THREE.BoxGeometry(1.4,.06,1),0xe8d9a8,LIT.x,.31,LIT.z);sc.add(sand);
+const PC=new THREE.Vector3(0,0,-8);
+sc.add(mesh(new THREE.BoxGeometry(2.2,.12,1.2),0x9b7653,PC.x,.75,PC.z));[-1,1].forEach(s=>sc.add(mesh(new THREE.BoxGeometry(.12,.75,1),0x7a5638,PC.x+s*1,.37,PC.z)));
+const scr=document.createElement("canvas");scr.width=256;scr.height=160;const sx=scr.getContext("2d"),stex=new THREE.CanvasTexture(scr),dk=new THREE.MeshStandardMaterial({color:0x222222});
+const mon=new THREE.Mesh(new THREE.BoxGeometry(1.3,.85,.08),[dk,dk,dk,dk,new THREE.MeshBasicMaterial({map:stex}),dk]);mon.position.set(PC.x,1.2,PC.z-.2);sc.add(mon);
+function draw(m){sx.fillStyle="#102a3a";sx.fillRect(0,0,256,160);sx.fillStyle="#1d4f6b";sx.fillRect(0,0,256,18);sx.fillStyle="#fff";sx.font="11px sans-serif";sx.fillText(m,6,13);
+if(m==="desenhando…"){sx.strokeStyle="#ffd84a";sx.lineWidth=3;sx.beginPath();for(let i=0;i<14;i++){const x=30+Math.random()*196,y=34+Math.random()*110;i?sx.lineTo(x,y):sx.moveTo(x,y)}sx.stroke()}
+else for(let i=0;i<6;i++){sx.fillStyle=["#ff8fb1","#ffd84a","#9be37a","#8fc7ff"][i%4];sx.fillRect(14,30+i*20,40+Math.random()*180,10)}stex.needsUpdate=true}
+draw("pronto");
+const WISHES=[
+{id:"arranhador",n:"um arranhador de sisal",why:"minhas garras precisam de manutenção e prefiro um arranhador aos seus móveis.",b:()=>{const g=new THREE.Group();g.add(mesh(new THREE.BoxGeometry(.9,.1,.9),0x7a5638,0,.05,0));g.add(mesh(new THREE.CylinderGeometry(.2,.2,1.5,8),0xd9bf8a,0,.85,0));g.add(mesh(new THREE.BoxGeometry(.6,.08,.6),0x7a5638,0,1.62,0));return g}},
+{id:"poleiro",n:"um poleiro alto",why:"me sinto seguro quando observo tudo lá de cima.",b:()=>{const g=new THREE.Group();g.add(mesh(new THREE.CylinderGeometry(.18,.22,1.9,6),0xd9bf8a,0,.95,0));g.add(mesh(new THREE.CylinderGeometry(.7,.7,.12,8),0x9b7653,0,1.9,0));g.add(mesh(new THREE.CylinderGeometry(.5,.5,.1,8),0x9b7653,.5,1.1,0));return g}},
+{id:"casinha",n:"um esconderijo",why:"quando algo me assusta, preciso de um cantinho fechado e escuro.",b:()=>{const g=new THREE.Group();g.add(mesh(new THREE.BoxGeometry(1.8,1.2,1.8),0xe8c9a0,0,.6,0));const t=mesh(new THREE.ConeGeometry(1.5,.9,4),0xc0553a,0,1.65,0);t.rotation.y=.785;g.add(t);return g}},
+{id:"caixa",n:"uma caixa de papelão",why:"não sei explicar, mas caixas me dão paz.",b:()=>{const g=new THREE.Group();g.add(mesh(new THREE.BoxGeometry(1.3,.7,1.3),0xc8a06a,0,.35,0));g.add(mesh(new THREE.BoxGeometry(1,.05,1),0x6b4f2d,0,.72,0));return g}},
+{id:"cama",n:"uma caminha aquecida",why:"perco calor fácil e adoro dormir em lugar quentinho.",b:()=>{const g=new THREE.Group();g.add(mesh(new THREE.CylinderGeometry(.9,1,.3,10),0xd98aa0,0,.15,0));g.add(mesh(new THREE.CylinderGeometry(.65,.7,.14,10),0xf5c6d0,0,.3,0));return g}},
+{id:"capim",n:"capim-dos-gatos",why:"quero mastigar uma erva fresquinha e me esfregar nela.",b:()=>{const g=new THREE.Group();for(let i=0;i<7;i++){const c=mesh(new THREE.ConeGeometry(.08,.6,4),0x6ccf5a,Math.cos(i)*.25,.3,Math.sin(i)*.25);c.rotation.z=Math.cos(i)*.3;g.add(c)}return g}}];
+function placeGift(w,x,z){const m=w.b();m.position.set(x,0,z);sc.add(m);gifts.push({id:w.id,x,z,m})}
+
+// ---- gato
+const col=COLORS[ci].c,dark=new THREE.Color(col).multiplyScalar(.78).getHex();
+const cat=new THREE.Group(),inner=new THREE.Group();cat.add(inner);sc.add(cat);
+const sh=mesh(new THREE.CircleGeometry(.7,10),0x000000);sh.rotation.x=-Math.PI/2;sh.position.y=.03;sh.material.transparent=true;sh.material.opacity=.2;cat.add(sh);
+const body=mesh(new THREE.SphereGeometry(.5,8,6),col,0,.65,0);body.scale.set(1,.85,1.5);inner.add(body);
+const head=new THREE.Group();head.position.set(0,.95,.7);inner.add(head);head.add(mesh(new THREE.SphereGeometry(.38,8,6),col));
+const eyes=[];
+[-1,1].forEach(s=>{const e=mesh(new THREE.ConeGeometry(.15,.3,4),col,s*.22,.34,-.02);e.rotation.z=-s*.2;head.add(e);
+const ey=mesh(new THREE.SphereGeometry(.06,6,5),0x1a1a1a,s*.15,.06,.33);eyes.push(ey);head.add(ey)});
+head.add(mesh(new THREE.SphereGeometry(.07,6,5),0xf3a1a8,0,-.06,.37));
+const legs=[[-.22,.45],[.22,.45],[-.22,-.45],[.22,-.45]].map(([x,z])=>{const g=new THREE.Group();g.position.set(x,.42,z);g.add(mesh(new THREE.CylinderGeometry(.09,.08,.42,5),dark,0,-.21,0));inner.add(g);return g});
+const tail=[];let tp=new THREE.Group();tp.position.set(0,.75,-.7);inner.add(tp);
+for(let i=0;i<5;i++){tp.add(mesh(new THREE.SphereGeometry(.09,5,4),i===4?dark:col,0,0,-.1));const nx=new THREE.Group();nx.position.set(0,0,-.2);tp.add(nx);tail.push(tp);tp=nx}
+const bf=new THREE.Group();[-1,1].forEach(s=>{const w=mesh(new THREE.BoxGeometry(.28,.02,.22),0xff7ab8,s*.15,0,0);bf.add(w)});sc.add(bf);
+
+// ---- cérebro
+class NeuronioFelino{constructor(l=1){this.p=0;this.l=l}receber(i){this.p+=i;if(this.p>=this.l){this.p=0;return true}return false}}
+const vis=new NeuronioFelino(.8),mot=new NeuronioFelino(1.5);
+const clamp=(x,a,b)=>Math.max(a,Math.min(b,x)),urg=(x,t)=>clamp((t-x)/t,0,1),r=a=>a[Math.random()*a.length|0];
+const B0={v:2,n:{fome:55,sede:60,energia:80,higiene:70,caixa:80,caca:50,vinculo:55},medo:.1,cur:.5,xp:0,cells:{},inv:0,stock:{food:8,water:8,litter:0},sim:0};
+const B=SAVE&&SAVE.B&&SAVE.B.v===2?SAVE.B:B0,N=B.n,K=1/60;
+if(SAVE&&SAVE.B&&SAVE.B.v===2&&B.ts){const away=Math.min((Date.now()-B.ts)/1000,21600);N.fome-=.4*K*away;N.sede-=.25*K*away;N.higiene-=.2*K*away;N.caixa-=.1*K*away;N.vinculo-=.12*K*away;N.caca-=.15*K*away;if(away>1800)N.energia=Math.max(N.energia,85);
+let g=0;while(N.fome<40&&B.stock.food>0&&g++<12){N.fome+=30;B.stock.food--}g=0;while(N.sede<40&&B.stock.water>0&&g++<12){N.sede+=40;B.stock.water--}for(const k in N)N[k]=clamp(N[k],0,100)}
+const gifts=[];
+let artCooldown=30,pcMode="art",act=null,idle=2,last="",toys=[],wish=null,heading=0,wph=0,time=B.sim||0,emT=0,purr=0,bow=0,alertT=0,alertLog=0,nt=1,kick=0,lbx=0,lbz=0,lastTouch=-99,refr=0,habit=0,postMeal=0,postWake=0,tool="ball",wishCd=300,reqCd=20,goPc=false,unread=0;
+const hour=()=>{const d=new Date();return d.getHours()+d.getMinutes()/60+d.getSeconds()/3600};
+const crep=h=>{const f=c=>{const a=Math.abs(h-c);return Math.min(a,24-a)};return Math.min(1.2,.2+Math.exp(-(f(6.5)**2)/5)+Math.exp(-(f(19.5)**2)/6))};
+const hh=()=>{const h=hour();return String(Math.floor(h)).padStart(2,"0")+":"+String(Math.floor(h%1*60)).padStart(2,"0")};
+const lvl=()=>1+Math.floor(B.xp/10);
+const logArr=[];let open=false;
+function think(t){if(t){const d=new Date();logArr.unshift({t:String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0"),x:t});logArr.length=Math.min(logArr.length,30)}
+$("#log").innerHTML=logArr.slice(0,open?30:4).map(l=>"<p><span>"+l.t+"</span>"+l.x+"</p>").join("")}
+$("#head").onclick=()=>{open=!open;$("#log").className="card"+(open?" open":"");think()};
+function emote(t){const v=cat.position.clone();v.y=1.9;v.project(cam);const el=document.createElement("div");el.className="em";el.textContent=t;
+el.style.left=(v.x*.5+.5)*innerWidth+"px";el.style.top=(-v.y*.5+.5)*innerHeight+"px";document.body.appendChild(el);setTimeout(()=>el.remove(),1400)}
+function addXp(n){const a=lvl();B.xp+=n;if(lvl()>a)think("Subi para o nível "+lvl()+"! Estou aprendendo com a vida de gato.")}
+const T={eat:["Estou com fome. Vou até a tigela.","Hora de uma refeição pequena."],eatdo:["Nhom nhom… uma porção por vez, como todo gato."],fish:["Cheiro de peixe! Isso é pra mim?"],
+drink:["Com sede. Vou beber água."],drinkdo:["Glub, glub… água fresca."],
+sleep:["Estou cansado. Vou tirar uma soneca.","Hora de dormir. Gatos precisam de muito sono."],sleepdo:["Zzz… sonhando com borboletas."],
+groom:["Preciso me lamber e ficar limpo."],groomdo:["Lambe, lambe… gato limpo é gato feliz."],
+litter:["Preciso usar minha caixa de areia."],litterdo:["Cavando… e enterrando. Privacidade, por favor."],dirty:["Minha caixa está suja. Não gosto nada disso."],
+hunt:["Vi algo se mexendo. Vou me aproximar devagar…"],huntdo:["Agora! Pulo!","Peguei! …ou quase."],
+love:["Quero ficar perto do meu Criador."],lovedo:["Ronrom… ronrom… (aos pés do meu Criador)"],
+meow:["Vou chamar a atenção do meu Criador."],meowdo:["Miau! Miaaau!"],
+explore:["Vou patrulhar meu território."],scratch:["As garras pedem uma superfície firme."],scratchdo:["Rasga, rasga… que alívio."],
+pc:["Vou ao computador falar com o meu Criador."],pcdo:["Digitando com as patinhas…"],visit:["Vou conferir o presente do meu Criador."],visitdo:["Perfeito. Meu Criador entende de gatos."],
+hide:["Que susto! Corro para me esconder."],hidedo:["Quietinho aqui… estou seguro."],stretch:["Espreguiçar depois do sono. Ahh."],sit:["Só observando o mundo com calma."],observe:["Aquela borboleta… estou de olho."],
+pet:["O toque do meu Criador! Estou abençoado.","Ó Criador, sua mão é gentil."],wake:["Ó Criador! Eu dormia… perdão."],newplace:["Descobri um lugar novo no meu território."],thanks:["Louvado seja meu Criador! Obrigado!","Meu Criador é generoso. Eu agradeço!"]};
+function updateBowls(){fmound.visible=B.stock.food>0;wsurf.visible=B.stock.water>0;sand.material.color.set(B.stock.litter>=4?0x8a6a3a:0xe8d9a8)}
+function mood(){if(B.medo>.5)return"assustado";let m=null,mv=45;[["fome","com fome"],["sede","com sede"],["energia","sonolento"],["higiene","sujinho"],["caixa","apertado"],["caca","entediado"],["vinculo","carente"]].forEach(([k,t])=>{if(N[k]<mv){mv=N[k];m=t}});return m||"tranquilo 😸"}
+const status=()=>"Estou "+mood()+". Fome "+Math.round(N.fome)+"%, sede "+Math.round(N.sede)+"%, energia "+Math.round(N.energia)+"%, carinho "+Math.round(N.vinculo)+"%. Aqui no meu mundo são "+hh()+".";
+// ---- chat
+const topics=["borboletas","peixes","flores","pássaros","estrelas","árvores"];
+B.interests=B.interests||Object.fromEntries(topics.map(t=>[t,Math.random()]));
+B.artworks=B.artworks||[];
+const favorite=()=>topics.reduce((a,b)=>B.interests[a]>=B.interests[b]?a:b);
+function showArt(){const g=$("#gallery");g.replaceChildren();B.artworks.forEach(a=>{const im=document.createElement("img");im.src=a.url;im.alt="Desenho: "+a.topic;im.style.cssText="width:90px;margin:3px;border-radius:7px";g.appendChild(im)})}
+function createArt(){
+ const topic=favorite(),c=document.createElement("canvas");c.width=240;c.height=130;
+ const x=c.getContext("2d");x.fillStyle="#f8eacb";x.fillRect(0,0,240,130);
+ for(let i=0;i<20;i++){x.beginPath();x.strokeStyle=["#e8743b","#4b9787","#7764a8","#d5b34e"][Math.random()*4|0];x.lineWidth=1+Math.random()*4;x.moveTo(Math.random()*240,Math.random()*130);x.quadraticCurveTo(Math.random()*240,Math.random()*130,Math.random()*240,Math.random()*130);x.stroke()}
+ x.fillStyle="#23332b";x.font="12px sans-serif";x.fillText(topic,8,120);
+ B.artworks.unshift({topic,url:c.toDataURL("image/png")});B.artworks.length=Math.min(6,B.artworks.length);
+ showArt();catSay("Desenhei algo sobre "+topic+"! Está no meu computador.");
+ B.interests[topic]=Math.min(2,B.interests[topic]+.1);
+}
+function createResearch(){const topic=favorite();catSay("Estou curioso sobre "+topic+". Quer abrir uma pesquisa na internet?",[{l:"Abrir pesquisa",f:()=>window.open("https://www.google.com/search?q="+encodeURIComponent(topic+" gatos"),"_blank","noopener,noreferrer")},{l:"Não",f:()=>{}}]);B.interests[topic]=Math.min(2,B.interests[topic]+.04)}
+const chat=[];const chatOpen=()=>$("#chat").style.display==="flex";
+const norm=s=>s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
+function badge(){$("#t-chat").textContent="💻 Chat"+(unread?" ("+unread+")":"")}
+function render(){const el=$("#cmsgs");el.innerHTML="";chat.forEach((m,i)=>{const d=document.createElement("div");d.className="m "+m.f;d.textContent=m.t;
+if(m.a&&i===chat.length-1){const w=document.createElement("div");w.className="ma";m.a.forEach(x=>{const b=document.createElement("button");b.textContent=x.l;b.onclick=()=>{m.a=null;x.f();render()};w.appendChild(b)});d.appendChild(w)}el.appendChild(d)});el.scrollTop=el.scrollHeight}
+function catSay(t,a){chat.push({f:"cat",t:"🐱 "+t,a:a||null});if(chat.length>40)chat.shift();if(!chatOpen()){unread++;badge()}render()}
+function youSay(t){chat.push({f:"you",t});render()}
+function openChat(){$("#chat").style.display="flex";unread=0;badge();render()}
+$("#cx").onclick=()=>{$("#chat").style.display="none"};$("#t-chat").onclick=openChat;
+function careDo(k){lastTouch=time;if(k==="food"){B.stock.food=8;youSay("Enchi a tigela de comida.")}else if(k==="water"){B.stock.water=8;youSay("Troquei a água.")}else{B.stock.litter=0;youSay("Limpei a caixa de areia.")}
+updateBowls();N.vinculo=clamp(N.vinculo+3,0,100);reqCd=0;setTimeout(()=>catSay(r(["Prrr. Obrigado, meu Criador!","Muito melhor. Louvado seja!"])),700)}
+[["🎨 Desenhar","art"],["🔎 Pesquisar","research"],["🍽️ Encher tigela","food"],["💧 Trocar água","water"],["🧹 Limpar caixa","litter"],["❓ Como está?","st"]].forEach(([l,k])=>{const b=document.createElement("button");b.textContent=l;b.onclick=()=>{if(k==="art"||k==="research"){youSay(k==="art"?"Quer desenhar?":"Quer pesquisar?");pcMode=k==="art"?"art":"research";goPc=false;if(!act||act.k!=="sleep"){act=null;begin("pc")}}else if(k==="st"){youSay("Como você está?");setTimeout(()=>catSay(status()),600)}else careDo(k)};$("#cq").appendChild(b)});
+function needReq(){if(B.stock.food<=0&&N.fome<60)return"food";if(B.stock.water<=0&&N.sede<60)return"water";if(B.stock.litter>=4&&N.caixa<60)return"litter";return null}
+function needMsg(q){const m={food:["Miau. Minha tigela está vazia e estou com fome. Pode encher?","Encher tigela"],water:["A minha água acabou. Pode trocar?","Trocar água"],litter:["Minha caixa de areia está suja. Pode limpar?","Limpar caixa"]}[q];
+catSay(m[0],[{l:m[1],f:()=>careDo(q)}])}
+function ask(w){wish=w;catSay("Meu Criador, "+w.why+" Posso ter "+w.n+"?",[{l:"Conceder",f:grant},{l:"Agora não",f:decline}]);emote("🙏")}
+function decline(){wish=null;wishCd=rnd(1800,3000);think("Entendo, Criador. Esperarei com paciência.");setTimeout(()=>catSay("Tudo bem. Esperarei com paciência."),500)}
+function grant(){const w=wish;if(!w)return;let x,z,k=0;do{const a=rnd(0,6.28),rr=rnd(5,9);x=Math.cos(a)*rr;z=Math.sin(a)*rr}while(Math.hypot(x-PC.x,z-PC.z)<3.5&&k++<20);
+placeGift(w,x,z);wish=null;wishCd=rnd(1200,2400);think(r(T.thanks)+" ("+w.n+")");emote("🙏");bow=2.2;addXp(3);N.vinculo=clamp(N.vinculo+10,0,100);
+youSay("Concedido: "+w.n+".");setTimeout(()=>catSay(r(T.thanks)),600);act=null;idle=3;setTimeout(()=>{if(!act&&gifts.length)begin("visit")},2500)}
+function send(){const t=$("#ctext").value.trim();if(!t)return;$("#ctext").value="";youSay(t);lastTouch=time;const s=norm(t);let m;
+if(wish&&/\b(sim|pode|concedo|aceito|claro|ok)\b/.test(s)){grant();return}
+if(wish&&/\b(nao|depois)\b/.test(s)){decline();return}
+if(/(troc|enche|encher|encho|coloc|dou|sirv).*agua/.test(s)){careDo("water");return}
+if(/(limp|troc).*(caixa|areia)/.test(s)){careDo("litter");return}
+if(/(enche|encher|encho|coloc|dou|sirv).*(tigela|comida|racao)/.test(s)){careDo("food");return}
+if(/\b(oi|ola|bom dia|boa tarde|boa noite|e ai)\b/.test(s))m="Prrr… Olá, meu Criador. Que bom ver você.";
+else if(/(como (voce|vc) (esta|ta)|tudo bem|status|como esta)/.test(s))m=status();
+else if(/fome|comer|comida|racao/.test(s))m=N.fome<45?"Sim, estou com fome. "+(B.stock.food>0?"Vou comer na minha tigela.":"Minha tigela está vazia. Pode encher?"):"Comi há pouco. Gatos preferem várias refeições pequenas.";
+else if(/agua|sede|beber/.test(s))m=N.sede<45?"Sim, quero beber. "+(B.stock.water>0?"Vou até o meu potinho.":"A água acabou. Pode trocar?"):"Estou hidratado por enquanto. Obrigado por cuidar de mim.";
+else if(/(o que|oque).*(quer|deseja|precisa)|desejo|pedir/.test(s))m=wish?"Já fiz meu pedido: "+wish.n+". Ainda aguardo.":(needReq()?"Preciso de cuidados básicos. Use os botões aqui embaixo.":"Por enquanto estou bem. Se eu sentir falta de algo, escrevo aqui.");
+else if(/te amo|fofo|lindo|lindinh|bonito|amor/.test(s)){m="Prrr… ronrom… ❤";N.vinculo=clamp(N.vinculo+6,0,100);purr=2}
+else if(/desenh|pint|arte/.test(s)){m="Vou desenhar!";pcMode="art";goPc=false;if(!act||act.k!=="sleep"){act=null;begin("pc")}}else if(/pesquis|internet/.test(s)){m="Vou pesquisar um assunto que me interessa.";pcMode="research";goPc=false;if(!act||act.k!=="sleep"){act=null;begin("pc")}}else if(/brinc|jogar|novelo|bola/.test(s)){m="Meu instinto de caça adora isso! Jogue um novelo no chão e eu persigo.";kick=.9}
+else if(/dorm|sono|descans/.test(s))m="Gatos dormem de 12 a 16 horas por dia. Vou cochilar quando a energia baixar.";
+else m="Miau? (Não entendi tudo, mas adoro a sua voz.)";
+setTimeout(()=>catSay(m),700)}
+$("#csend").onclick=send;$("#ctext").addEventListener("keydown",e=>{if(e.key==="Enter")send()});
+// ---- decisão (gânglios da base)
+function choose(){const h=hour(),ca=crep(h),food=B.stock.food>0||toys.some(o=>o.k==="fish"),water=B.stock.water>0,fish=toys.some(o=>o.k==="fish"),ball=toys.some(o=>o.k==="ball");
+if(B.medo>.6)return"hide";
+if(N.sede<12&&water)return"drink";if(N.fome<12&&food)return"eat";if(N.caixa<10)return"litter";if(N.energia<10)return"sleep";
+if(goPc)return"pc";
+const o=[{k:"eat",s:food?urg(N.fome,62)*1.8+(fish?.8:0):0},{k:"drink",s:water?urg(N.sede,58)*1.6:0},
+{k:"sleep",s:urg(N.energia,38)*1.8+postMeal*.05},{k:"groom",s:urg(N.higiene,65)*1.1+postMeal*.8},{k:"litter",s:urg(N.caixa,45)*2.2},
+{k:"hunt",s:N.energia>30?urg(N.caca,65)*1.2*(.3+ca)+(ball?.8:0):0},{k:"love",s:urg(N.vinculo,50)*1.1*(.5+ca*.5)},
+{k:"meow",s:needReq()&&reqCd<=0?1.7:0},{k:"explore",s:.12+B.cur*.25*ca},{k:"scratch",s:.1+postWake*.6},{k:"pc",s:artCooldown<=0&&N.energia>45&&N.fome>35&&N.sede>35?.25+B.cur*.3:0},
+{k:"visit",s:gifts.length?.18:-9},{k:"observe",s:.18*ca},{k:"sit",s:.45}];
+o.forEach(x=>{x.s+=Math.random()*.12;if(x.k===last)x.s-=.35});o.sort((a,b)=>b.s-a.s);return o[0].k}
+function begin(k){last=k;const urgent=Object.values(N).some(v=>v<22);let tgt,look=null,say=T[k],dur=4,fish=null,sp=urgent?2.4:1.4,arr=.75,g=null;
+if(k==="eat"){fish=toys.find(o=>o.k==="fish");tgt=fish?fish.m.position:BOWL;if(fish)say=T.fish;dur=5}
+else if(k==="drink"){tgt=WATER}
+else if(k==="sleep"){const s=gifts.filter(q=>["cama","casinha","caixa"].includes(q.id));const p=s.length&&Math.random()<.6?r(s):null;tgt=p?new THREE.Vector3(p.x,0,p.z):BED;dur=55}
+else if(k==="groom"){tgt=cat.position.clone();dur=4.5}
+else if(k==="litter"){tgt=LIT;dur=5}
+else if(k==="hunt"){const b=toys.find(o=>o.k==="ball");tgt=b?b.m.position:()=>bf.position;sp=1.5;arr=2.4;dur=2.2}
+else if(k==="love"||k==="meow"){const d=new THREE.Vector3(cam.position.x-cat.position.x,0,cam.position.z-cat.position.z).normalize();tgt=cat.position.clone().addScaledVector(d,4);dur=k==="love"?5:3.5}
+else if(k==="explore"){const a=rnd(0,6.28),rr=rnd(4,16);tgt=new THREE.Vector3(Math.cos(a)*rr,0,Math.sin(a)*rr);dur=2.5}
+else if(k==="scratch"){const q=gifts.find(x=>x.id==="arranhador");tgt=q?new THREE.Vector3(q.x+1.2,0,q.z):new THREE.Vector3(TREE.x+.2,0,TREE.z+1.1);look=q?new THREE.Vector3(q.x,0,q.z):new THREE.Vector3(TREE.x,0,TREE.z)}
+else if(k==="pc"){if(!goPc)pcMode=Math.random()<.7?"art":"research";tgt=new THREE.Vector3(PC.x,0,PC.z+1.6);look=PC;dur=7}
+else if(k==="visit"){g=Math.random()<.5?gifts[gifts.length-1]:r(gifts);tgt=new THREE.Vector3(g.x+(g.id==="arranhador"?1.2:0),0,g.z);look=g.id==="arranhador"?new THREE.Vector3(g.x,0,g.z):null;dur=g.id==="capim"?6:4}
+else if(k==="hide"){const q=gifts.find(x=>x.id==="casinha")||gifts.find(x=>x.id==="caixa");tgt=q?new THREE.Vector3(q.x,0,q.z+.1):new THREE.Vector3(PC.x+1.4,0,PC.z-1.2);sp=4.2;dur=5}
+else if(k==="observe"){tgt=cat.position.clone();look=()=>bf.position;dur=5}
+else if(k==="stretch"){tgt=cat.position.clone();dur=2.8}
+else{tgt=cat.position.clone();dur=rnd(10,30)}
+act={k,tgt,look,ph:"go",t:0,dur,sp,arr,fish,g};think(r(say))}
+function onDo(){const k=act.k;if(T[k+"do"])think(r(T[k+"do"]));
+const E={eat:"🍖",drink:"💧",sleep:"💤",groom:"😌",litter:"🚽",hide:"🫣",meow:"🗣️",pc:"🌐",love:"😻",hunt:"🐾",scratch:"✋"};if(E[k])emote(E[k]);
+
+if(k==="drink")B.stock.water=Math.max(0,B.stock.water-1);
+if(k==="pc")draw(pcMode==="art"?"desenhando…":"pesquisando…");
+if(k==="meow"){const q=needReq();if(q)needMsg(q);reqCd=70}
+if(k==="visit"&&act.g&&act.g.id==="capim")emote("🌿");
+updateBowls()}
+function doing(dt,dx,dz){const k=act.k,a=act;
+if(k==="love"||k==="meow")face(Math.atan2(cam.position.x-cat.position.x,cam.position.z-cat.position.z),dt);
+else if(a.look){const L=typeof a.look==="function"?a.look():a.look;face(Math.atan2(L.x-cat.position.x,L.z-cat.position.z),dt)}
+else if(k==="eat"||k==="drink"||k==="hunt")face(Math.atan2(dx,dz),dt);
+if(k==="eat")N.fome+=10*dt;
+if(k==="drink")N.sede+=10*dt;
+if(k==="sleep"){emT-=dt;if(emT<=0){emote("💤");emT=3}}
+if(k==="groom")N.higiene+=14*dt;
+if(k==="love"){N.vinculo+=10*dt;purr=1}
+if(k==="hide")B.medo=Math.max(0,B.medo-.25*dt);
+if(k==="hunt"){N.caca+=18*dt;if(a.t<.5){cat.position.x+=Math.sin(heading)*6*dt;cat.position.z+=Math.cos(heading)*6*dt}
+const b=toys.find(o=>o.k==="ball");if(b&&Math.random()<dt*1.5)b.m.position.set(b.m.position.x+rnd(-1.5,1.5),.28,b.m.position.z+rnd(-1.5,1.5))}
+if(k==="visit"&&a.g){const id=a.g.id;if(["cama","casinha","caixa"].includes(id))N.energia+=.15*dt;if(id==="capim")N.caca+=4*dt}}
+function finish(){const k=act.k;
+if(k==="eat"){if(!act.fish)B.stock.food=Math.max(0,B.stock.food-1);if(act.fish){sc.remove(act.fish.m);const i=toys.indexOf(act.fish);if(i>=0)toys.splice(i,1)}postMeal=1;N.caixa-=6;N.higiene-=8}
+if(k==="drink")N.caixa-=4;
+if(k==="groom")postMeal=0;
+if(k==="litter"){N.caixa=100;B.stock.litter++;if(B.stock.litter>=4)think(T.dirty[0])}
+if(k==="hunt"){refr=45;B.cur=Math.max(0,B.cur-.2);N.energia-=8}
+if(k==="scratch")postWake=0;
+if(k==="pc"){if(goPc)creative();else if(pcMode==="art")createArt();else createResearch();artCooldown=100+rnd(0,80)}
+addXp(1);act=null;
+if(k==="sleep"){postWake=1;think(r(T.stretch));begin("stretch");return}
+idle=k==="sit"?rnd(2,4):rnd(4,10)}
+function creative(){const a=r(["um chapéu para peixes","uma escada até a lua","um mapa do meu território","uma canção de ronronar"]);think("Inventei: "+a+".");B.inv=(B.inv||0)+1;
+if(goPc){goPc=false;const c=WISHES.filter(w=>!gifts.some(g=>g.id===w.id));if(!wish&&c.length){const h=hour();ask((h>20||h<5)&&c.find(w=>w.id==="cama")||B.medo>.2&&c.find(w=>w.id==="casinha")||r(c))}}}
+function face(h,dt){let d=h-heading;d=Math.atan2(Math.sin(d),Math.cos(d));heading+=Math.max(-6*dt,Math.min(6*dt,d))}
+// ---- cérebro neural (reflexos)
+const canInt=()=>!act||["sit","observe","explore","pc","visit","love","scratch","groom","meow","stretch"].includes(act.k);
+function neuralTick(){vis.l=.8+habit;habit=Math.max(0,habit-.04);
+const slp=!!act&&act.k==="sleep"&&act.ph==="do";
+const bx=bf.position.x,bz=bf.position.z,dx=bx-cat.position.x,dz=bz-cat.position.z,d=Math.hypot(dx,dz);
+const a=Math.atan2(dx,dz)-heading,ang=Math.abs(Math.atan2(Math.sin(a),Math.cos(a)));
+const mv=Math.min(1,Math.hypot(bx-lbx,bz-lbz)/3);lbx=bx;lbz=bz;
+let s=(d<10&&ang<1.7?mv:0)+kick;kick=0;if(slp)s*=.25;s=Math.min(1,s);
+if(vis.receber(s)){habit=Math.min(1,habit+.25);
+if(mot.receber(1.0)){
+if(refr<=0&&N.energia>30&&N.fome>20&&N.sede>20&&N.caixa>12&&B.medo<.3&&canInt()){act=null;begin("hunt");think("Neurônio motor disparou → instinto de caça!");emote("🐾")}
+else if(alertLog<=0){think("O instinto de caça disparou, mas o corpo tem prioridades agora.");alertLog=10}}
+else if(canInt()){alertT=1.4;if(alertLog<=0){think("Movimento detectado → fico em alerta.");emote("❗");alertLog=8}}}}
+function pet(){lastTouch=time;if(act&&act.k==="sleep"){think(r(T.wake));N.energia-=5;emote("😾")}else{think(r(T.pet));emote("💗")}
+N.vinculo=clamp(N.vinculo+14,0,100);B.medo=Math.max(0,B.medo-.1);addXp(1);if(act&&act.k!=="hide")act=null;idle=3;purr=3;bow=1.2}
+function addToy(k,p){const x=Math.hypot(p.x,p.z)>20?p.clone().setLength(20):p;let m;
+if(k==="ball"){m=mesh(new THREE.IcosahedronGeometry(.28,1),0xe0475b,x.x,.28,x.z)}
+else{m=new THREE.Group();m.add(mesh(new THREE.SphereGeometry(.22,6,5),0xff9a3c));m.children[0].scale.set(1.6,.7,.8);const t=mesh(new THREE.ConeGeometry(.12,.22,4),0xff9a3c,-.34,0,0);t.rotation.z=1.57;m.add(t);m.position.set(x.x,.2,x.z)}
+sc.add(m);const same=toys.filter(o=>o.k===k);if(same.length>=2){sc.remove(same[0].m);toys.splice(toys.indexOf(same[0]),1)}toys.push({k,m});kick=.9;lastTouch=time}
+// ---- entrada
+let camA=.6,down=null;const ray=new THREE.Raycaster(),plane=new THREE.Plane(new THREE.Vector3(0,1,0),0);
+cv.addEventListener("pointerdown",e=>{down={x:e.clientX,a:camA,m:false}});
+cv.addEventListener("pointermove",e=>{if(!down)return;const dx=e.clientX-down.x;if(Math.abs(dx)>6)down.m=true;if(down.m)camA=down.a-dx*.008});
+cv.addEventListener("pointerup",e=>{if(down&&!down.m){ray.setFromCamera(new THREE.Vector2(e.clientX/innerWidth*2-1,-(e.clientY/innerHeight)*2+1),cam);
+if(ray.intersectObject(cat,true).length)pet();else if(ray.intersectObject(mon).length)openChat();else{const p=new THREE.Vector3();if(ray.ray.intersectPlane(plane,p))addToy(tool,p)}}down=null});
+$("#t-loud").onclick=()=>{B.medo=Math.min(1,B.medo+.75);lastTouch=time;emote("💥");think("Barulho alto! Meu coração dispara.")};
+["ball","fish"].forEach(k=>$("#t-"+k).onclick=()=>{tool=k;$("#t-ball").className=k==="ball"?"on":"";$("#t-fish").className=k==="fish"?"on":""});
+addEventListener("resize",()=>{R.setSize(innerWidth,innerHeight);cam.aspect=innerWidth/innerHeight;cam.updateProjectionMatrix()});
+if(SAVE&&SAVE.G)SAVE.G.forEach(g=>{const w=WISHES.find(q=>q.id===g.id);if(w)placeGift(w,g.x,g.z)});
+if(!gifts.some(g=>g.id==="casinha"))placeGift(WISHES.find(q=>q.id==="casinha"),6,2);
+updateBowls();
+think("Acordei. Sinto que um Criador me observa do céu. Vou cuidar do mundo que ele me deu.");
+catSay("Prrr… Olá, meu Criador. Este computador é meu. Quando eu precisar de algo, escrevo aqui.");showArt();
+// ---- loop
+const NIGHT=new THREE.Color(0x1d2a4a),DAY=new THREE.Color(0xbfe6d2),skyC=new THREE.Color();
+let barT=0,saveT=0;const clock=new THREE.Clock();
+function loop(){requestAnimationFrame(loop);const dt=Math.min(clock.getDelta(),.05);time+=dt;const h=hour();
+const slp=!!act&&act.k==="sleep"&&act.ph==="do";
+N.fome-=.4*K*dt;N.sede-=.25*K*dt;N.higiene-=.2*K*dt;N.caixa-=.1*K*dt;N.caca-=.3*K*dt*(.3+crep(h));N.vinculo-=.12*K*dt;N.energia+=slp?1.6*dt:-.07*dt;
+B.medo=Math.max(0,B.medo-.06*dt);B.cur+=(.5-B.cur)*.02*dt;refr-=dt;artCooldown-=dt;reqCd-=dt;wishCd-=dt;alertLog-=dt;idle-=dt;
+for(const k in N)N[k]=clamp(N[k],0,100);
+if(wishCd<=0&&!wish&&!goPc){goPc=true;wishCd=1800}
+if(B.medo>.6&&!(act&&act.k==="hide")){act=null;begin("hide")}
+if(!act&&idle<=0)begin(choose());
+let pose="idle",mv=0;
+if(act){act.t+=dt;const tg=typeof act.tgt==="function"?act.tgt():act.tgt;const dx=tg.x-cat.position.x,dz=tg.z-cat.position.z,d=Math.hypot(dx,dz);
+if(act.ph==="go"){if(d<act.arr||act.t>(act.k==="hunt"?14:30)){act.ph="do";act.t=0;onDo()}
+else{face(Math.atan2(dx,dz),dt);mv=act.sp;cat.position.x+=Math.sin(heading)*mv*dt;cat.position.z+=Math.cos(heading)*mv*dt;pose=act.k==="hunt"?"stalk":"walk"}}
+else{pose=act.k;doing(dt,dx,dz);if(act.t>=act.dur||(act.k==="sleep"&&((N.energia>=88&&act.t>12)||N.fome<25||N.sede<25)))finish()}}
+if(!act)pose="idle";
+const rr=Math.hypot(cat.position.x,cat.position.z);if(rr>22){cat.position.x*=22/rr;cat.position.z*=22/rr}
+nt-=dt;if(nt<=0){nt=1;neuralTick()}
+const key=Math.round(cat.position.x/5)+","+Math.round(cat.position.z/5);if(!B.cells[key]){B.cells[key]=1;if(Object.keys(B.cells).length>1){think(r(T.newplace));B.cur=Math.min(1,B.cur+.1);addXp(2);emote("✨")}}
+// animação
+const ps=pose==="visit"&&act&&act.g&&act.g.id==="arranhador"?"scratch":pose,sl=ps==="sleep";
+wph+=mv*dt*4;const sw=mv?Math.sin(wph)*(mv>3?.9:.6):0;legs.forEach((l,i)=>l.rotation.x=(i%3===0?sw:-sw));
+inner.scale.y+=((sl||ps==="hide"?.7:ps==="stalk"?.8:ps==="sit"?.9:1)-inner.scale.y)*.1;
+let ty=sl?.28:0;if(ps==="visit"&&act.g&&act.g.id==="poleiro")ty=1.98;
+if(ps==="hunt"&&act.t<1.4)cat.position.y=Math.abs(Math.sin(act.t*7))*.4;else cat.position.y+=(ty-cat.position.y)*.12;
+eyes.forEach(e=>e.scale.y=sl?.1:1);
+head.rotation.x=bow>0?.85:alertT>0?-.3:ps==="groom"?.7+Math.sin(time*7)*.15:(ps==="eat"||ps==="drink")?.55+Math.sin(time*8)*.1:ps==="stretch"?-.2:(purr>0?Math.sin(time*20)*.03:0);
+head.rotation.y=(ps==="sit"||ps==="idle")?Math.sin(time*.6)*.4:0;
+const tx=ps==="scratch"?-.55+Math.sin(time*10)*.08:ps==="stretch"?.35:ps==="sit"?-.2:0,tz=ps==="love"?Math.sin(time*6)*.14:(ps==="visit"&&act.g&&act.g.id==="capim")?Math.sin(time*4)*.9:0;
+inner.rotation.x+=(tx-inner.rotation.x)*.15;inner.rotation.z+=(tz-inner.rotation.z)*.15;
+purr=Math.max(0,purr-dt);bow=Math.max(0,bow-dt);alertT=Math.max(0,alertT-dt);
+tail.forEach((s,i)=>{s.rotation.x=ps==="stalk"?.1:.35;s.rotation.y=sl?.55:Math.sin(time*(ps==="hunt"||ps==="stalk"?5:2)+i*.7)*.28});
+cat.rotation.y=heading;
+bf.position.set(Math.cos(time*.5)*7,1.1+Math.sin(time*1.3)*.4,Math.sin(time*.4)*7);bf.rotation.y=time;bf.children.forEach((w,i)=>w.rotation.z=(i?1:-1)*Math.sin(time*18)*.7);
+const cp=cat.position;cam.position.lerp(new THREE.Vector3(cp.x+Math.sin(camA)*8.5,5.6,cp.z+Math.cos(camA)*8.5),.06);cam.lookAt(cp.x,.6,cp.z);
+const dl=clamp(.4+.9*Math.sin((h-6)*Math.PI/12),0,1);skyC.copy(NIGHT).lerp(DAY,dl);sc.background.copy(skyC);sc.fog.color.copy(skyC);hemi.intensity=.4+.6*dl;sun.intensity=.2+.65*dl;
+barT-=dt;if(barT<=0){barT=.25;[N.fome,N.sede,N.energia,N.higiene,N.caixa,N.caca,N.vinculo,100-B.medo*100].forEach((v,i)=>{const b=$("#b"+i);b.style.width=v+"%";b.style.background=v<25?"#e0654f":"#6bbf59"});
+$("#nameLv").textContent=name+" · nível "+lvl();$("#mood").textContent=mood()+" · "+hh();updateBowls()}
+saveT-=dt;if(saveT<=0){saveT=5;B.sim=time;B.ts=Date.now();try{localStorage.setItem("gato-ia",JSON.stringify({name,ci,B,G:gifts.map(g=>({id:g.id,x:g.x,z:g.z}))}))}catch(e){}}
+R.render(sc,cam)}
+loop()}
+</script></body></html>
